@@ -24,6 +24,11 @@ def escribir_archivo_csv(path, headers, content):
 		writer.writerow(headers)
 		writer.writerows(content)
 
+def formato_tiempo(tiempo):
+	minutos = tiempo //60
+	segundos = tiempo % 60
+	return f'{int(minutos)} min {int(segundos)} seg'
+
 def generar_reporte_simple(content):
 	llamadas_realizadas = defaultdict(int)			# Total llamadas realizadas
 	llamadas_contestadas = defaultdict(int)		# Total llamadas contestadas
@@ -83,11 +88,6 @@ def generar_reporte_simple(content):
 	new_path = easygui.filesavebox(default='Reporte simple.csv')
 
 	escribir_archivo_csv(new_path, headers, datos_subir)
-
-def formato_tiempo(tiempo):
-	minutos = tiempo //60
-	segundos = tiempo % 60
-	return f'{int(minutos)} min {int(segundos)} seg'
 
 def generar_reporte_por_agente(content):
 	nombres_agentes = list(set([n[24] for n in content])) 		# Nombre de los agentes (filtrados y sin duplicados)
