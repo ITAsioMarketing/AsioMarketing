@@ -120,7 +120,7 @@ def generar_reporte_por_agente(content):
 				 llamadas_efectivas[i],
 				 formato_tiempo(tiempo_prom_llamada[i]),
 				 f'{round(llamadas_contestadas[i]/llamadas_realizadas[i], 2) *100}%',
-				 f'{round(llamadas_efectivas[i]/llamadas_contestadas[i], 2)*100}%'
+				 f'{round(float(0))*100}%'
 				]
 			)
 		else:
