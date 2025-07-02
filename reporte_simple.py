@@ -30,7 +30,7 @@ def formato_tiempo(tiempo):
 	return f'{int(minutos)} min {int(segundos)} seg'
 
 def generar_reporte_simple(content):
-	llamadas_realizadas = defaultdict(int)			# Total llamadas realizadas
+	llamadas_realizadas = defaultdict(int)		# Total llamadas realizadas
 	llamadas_contestadas = defaultdict(int)		# Total llamadas contestadas
 	suma_duracion = defaultdict(int)			# Suma de tiempo de llamadas
 	llamadas_efectivas = defaultdict(int)		# total de llamadas de más de 7 min (420 seg)
