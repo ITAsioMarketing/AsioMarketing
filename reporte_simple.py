@@ -6,30 +6,30 @@ from datetime import datetime, timedelta
 
 # Funciones
 # ====================================
-def leer_archivo_csv(path):
+def leer_archivo_csv(path:str)-> tuple[list[str], list[list[str]]]:
 	with open(path, 'r', newline='', encoding='utf-8') as file:
 		reader = csv.reader(file)
 		headers = next(reader)
 		content = [n for n in reader if n != []]
 	return headers, content
 
-def acomodar_fecha(fecha):	
+def acomodar_fecha(fecha:str)->str:	
 	dtime = datetime.strptime(fecha, "%a, %d %b %Y %H:%M:%S GMT") - timedelta(hours = 6)
 	dtime = dtime.strftime("%d/%m/%Y %H:%M:%S")
 	return dtime
 
-def escribir_archivo_csv(path, headers, content):
+def escribir_archivo_csv(path:str, headers:list[str], content:list[list[str]])->None:
 	with open(path, 'w', newline = '', encoding='utf-8') as file:
 		writer = csv.writer(file)
 		writer.writerow(headers)
 		writer.writerows(content)
 
-def formato_tiempo(tiempo):
+def formato_tiempo(tiempo:float)->str:
 	minutos = tiempo //60
 	segundos = tiempo % 60
 	return f'{int(minutos)} min {int(segundos)} seg'
 
-def generar_reporte_simple(content):
+def generar_reporte_simple(content:list[list[str]])->None:
 	llamadas_realizadas = defaultdict(int)		# Total llamadas realizadas
 	llamadas_contestadas = defaultdict(int)		# Total llamadas contestadas
 	suma_duracion = defaultdict(int)			# Suma de tiempo de llamadas
@@ -60,36 +60,58 @@ def generar_reporte_simple(content):
 			suma_duracion[clave] += int(row[29])
 			if int(row[29]) >= 420:
 				llamadas_efectivas[clave] += 1
-		
+
 	datos_subir = []
 	for clave in llamadas_realizadas:
-		try:
-			datos_subir.append(
-				list(clave) + 
-				[llamadas_realizadas[clave]] +
-				[llamadas_contestadas[clave]] +
-				[llamadas_efectivas[clave]]+
-				[formato_tiempo(suma_duracion[clave] / llamadas_contestadas[clave])] +
-				[f'{round(llamadas_contestadas[clave]/llamadas_realizadas[clave], 2) *100}%'] +
-				[f'{round(llamadas_efectivas[clave]/llamadas_contestadas[clave], 2) *100}%'] 
-			)
-		except ZeroDivisionError:
-			datos_subir.append(
-				list(clave) +
-				[llamadas_realizadas[clave]] +
-				[llamadas_contestadas[clave]] +
-				[llamadas_efectivas[clave]]+
-				[formato_tiempo(0)] +
-				[f'{round(llamadas_contestadas[clave]/llamadas_realizadas[clave], 2) *100}%'] +
-				[f'{round(llamadas_efectivas[clave]/llamadas_contestadas[clave], 2) *100}%'] 
-			)
+		if llamadas_realizadas[clave] == 0:
+			if llamadas_contestadas[clave] == 0:
+				datos_subir.append(
+					list(clave) + 
+					[llamadas_realizadas[clave]] +
+					[llamadas_contestadas[clave]] +
+					[llamadas_efectivas[clave]]+
+					[formato_tiempo(0)] +
+					[f'{round(0, 2) *100}%'] +
+					[f'{round(0, 2) *100}%'] 
+				)
+			else:
+				datos_subir.append(
+					list(clave) + 
+					[llamadas_realizadas[clave]] +
+					[llamadas_contestadas[clave]] +
+					[llamadas_efectivas[clave]]+
+					[formato_tiempo(suma_duracion[clave] / llamadas_contestadas[clave])] +
+					[f'{round(0, 2) *100}%'] +
+					[f'{round(llamadas_efectivas[clave]/llamadas_contestadas[clave], 2) *100}%'] 
+				)
+		else:
+			if llamadas_contestadas[clave] == 0:
+				datos_subir.append(
+					list(clave) + 
+					[llamadas_realizadas[clave]] +
+					[llamadas_contestadas[clave]] +
+					[llamadas_efectivas[clave]]+
+					[formato_tiempo(0)] +
+					[f'{round(llamadas_contestadas[clave]/llamadas_realizadas[clave], 2) *100}%'] +
+					[f'{round(0, 2) *100}%'] 
+				)
+			else:
+				datos_subir.append(
+					list(clave) + 
+					[llamadas_realizadas[clave]] +
+					[llamadas_contestadas[clave]] +
+					[llamadas_efectivas[clave]]+
+					[formato_tiempo(suma_duracion[clave] / llamadas_contestadas[clave])] +
+					[f'{round(llamadas_contestadas[clave]/llamadas_realizadas[clave], 2) *100}%'] +
+					[f'{round(llamadas_efectivas[clave]/llamadas_contestadas[clave], 2) *100}%'] 
+				)
 
 	headers = ['Fecha', 'Hora Inicio', 'Hora Fin', 'Total llamadas realizadas', 'Total llamadas contestadas', 'Total llamadas efectivas', 'Duración promedio (MM:SS)', 'Porcentaje llamadas contestadas', 'Porcentaje llamadas efectivas']
 	new_path = easygui.filesavebox(default='Reporte simple.csv')
 
 	escribir_archivo_csv(new_path, headers, datos_subir)
 
-def generar_reporte_por_agente(content):
+def generar_reporte_por_agente(content:list[list[str]])->None:
 	nombres_agentes = list(set([n[24] for n in content])) 		# Nombre de los agentes (filtrados y sin duplicados)
 	tiempo_prom_llamada = [0 for _ in nombres_agentes]			# Tiempo total de llamada por agente
 	llamadas_contestadas = [0 for _ in nombres_agentes]			# Total llamadas contestadas por agente
